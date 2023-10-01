@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Imahmood\FileStorage;
+
+use Illuminate\Support\ServiceProvider;
+use Imahmood\FileStorage\Config\Configuration;
+use Imahmood\FileStorage\Config\ConfigurationFactory;
+
+class FileStorageServiceProvider extends ServiceProvider
+{
+    /**
+     * Register services.
+     */
+    public function register(): void
+    {
+        $this->app->singleton(Configuration::class, function () {
+            return ConfigurationFactory::create(config('file-storage'));
+        });
+
+        $this->mergeConfigFrom(__DIR__.'/../config/file-storage.php', 'file-storage');
+    }
+
+    /**
+     * Bootstrap services.
+     */
+    public function boot(): void
+    {
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        $this->loadTranslationsFrom(__DIR__.'/../lang', 'file-storage');
+
+        $this->publishes([
+            __DIR__.'/../config/file-storage.php' => config_path('file-storage.php'),
+        ]);
+    }
+}
