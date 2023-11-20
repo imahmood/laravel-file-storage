@@ -17,7 +17,6 @@ use Imahmood\FileStorage\Exceptions\UnableToDeleteFileException;
 use Imahmood\FileStorage\Jobs\GeneratePreview;
 use Imahmood\FileStorage\Jobs\OptimizeImage;
 use Imahmood\FileStorage\Models\Media;
-use InvalidArgumentException;
 
 class FileStorage
 {
@@ -31,12 +30,12 @@ class FileStorage
      */
     public function create(
         MediaTypeInterface $type,
-        MediaAwareInterface $relatedTo,
+        ?MediaAwareInterface $relatedTo,
         UploadedFile $uploadedFile,
     ): Media {
         $media = new Media([
-            'model_type' => $relatedTo::class,
-            'model_id' => $relatedTo->getPrimaryKey(),
+            'model_type' => $relatedTo ? $relatedTo::class : null,
+            'model_id' => $relatedTo?->getPrimaryKey(),
             'type' => $type->identifier(),
         ]);
 
@@ -49,13 +48,13 @@ class FileStorage
      */
     public function update(
         MediaTypeInterface $type,
-        MediaAwareInterface $relatedTo,
+        ?MediaAwareInterface $relatedTo,
         Media $media,
         ?UploadedFile $uploadedFile,
     ): Media {
         $media->fill([
-            'model_type' => $relatedTo::class,
-            'model_id' => $relatedTo->getPrimaryKey(),
+            'model_type' => $relatedTo ? $relatedTo::class : null,
+            'model_id' => $relatedTo?->getPrimaryKey(),
             'type' => $type->identifier(),
         ]);
 
@@ -82,16 +81,12 @@ class FileStorage
      */
     public function updateOrCreate(
         MediaTypeInterface $type,
-        MediaAwareInterface $relatedTo,
+        ?MediaAwareInterface $relatedTo,
         ?Media $media,
-        ?UploadedFile $uploadedFile,
+        UploadedFile $uploadedFile,
     ): Media {
         if ($media) {
             return $this->update($type, $relatedTo, $media, $uploadedFile);
-        }
-
-        if (! $uploadedFile) {
-            throw new InvalidArgumentException();
         }
 
         return $this->create($type, $relatedTo, $uploadedFile);
@@ -104,7 +99,7 @@ class FileStorage
     {
         $media->preview = $fileName;
 
-        if (! $media->save()) {
+        if (!$media->save()) {
             throw new PersistenceFailedException();
         }
 
@@ -122,16 +117,16 @@ class FileStorage
                 $media->preview = null;
             }
 
-            if (! $media->save()) {
+            if (!$media->save()) {
                 throw new PersistenceFailedException();
             }
 
             if ($uploadedFile) {
-                $isUploaded = (bool) $uploadedFile->storeAs($media->dir_relative_path, $media->file_name, [
+                $isUploaded = (bool)$uploadedFile->storeAs($media->dir_relative_path, $media->file_name, [
                     'disk' => $this->config->diskName,
                 ]);
 
-                if (! $isUploaded) {
+                if (!$isUploaded) {
                     throw new PersistenceFailedException();
                 }
 
@@ -155,7 +150,7 @@ class FileStorage
     public function delete(Media $media): bool
     {
         return DB::transaction(function () use ($media) {
-            if (! $media->delete()) {
+            if (!$media->delete()) {
                 return false;
             }
 
@@ -171,7 +166,7 @@ class FileStorage
     protected function deleteDirectory(string $dir): void
     {
         $isDeleted = Storage::disk($this->config->diskName)->deleteDirectory($dir);
-        if (! $isDeleted) {
+        if (!$isDeleted) {
             throw new UnableToDeleteDirectoryException(sprintf(
                 '[FileStorage] Disk: %s, Directory: %s',
                 $this->config->diskName,
@@ -186,7 +181,7 @@ class FileStorage
     protected function deleteFile(array|string $paths): void
     {
         $isDeleted = Storage::disk($this->config->diskName)->delete($paths);
-        if (! $isDeleted) {
+        if (!$isDeleted) {
             $paths = is_array($paths) ? implode(', ', $paths) : $paths;
 
             throw new UnableToDeleteFileException(sprintf(

@@ -14,8 +14,8 @@ use Imahmood\FileStorage\Database\Factories\MediaFactory;
 
 /**
  * @property int $id
- * @property string $model_type
- * @property int $model_id
+ * @property string|null $model_type
+ * @property int|null $model_id
  * @property string $file_name
  * @property string|null $preview
  * @property int $type
