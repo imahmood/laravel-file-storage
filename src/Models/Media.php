@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Imahmood\FileStorage\Models;
 
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -162,7 +163,7 @@ class Media extends Model
     {
         $visibility = config("filesystems.disks.{$this->disk}.visibility");
 
-        if ($visibility === 'public') {
+        if ($visibility === Filesystem::VISIBILITY_PUBLIC) {
             return Storage::disk($this->disk)->url($path);
         }
 
