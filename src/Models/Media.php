@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\URL;
 use Imahmood\FileStorage\Database\Factories\MediaFactory;
 
 /**
  * @property int $id
+ * @property string $disk
  * @property string|null $model_type
  * @property int|null $model_id
  * @property string $file_name
@@ -25,11 +25,9 @@ use Imahmood\FileStorage\Database\Factories\MediaFactory;
  * @property-read string|null $original_relative_path
  * @property-read string|null $original_absolute_path
  * @property-read string|null $original_url
- * @property-read string|null $original_signed_url
  * @property-read string|null $preview_relative_path
  * @property-read string|null $preview_absolute_path
  * @property-read string|null $preview_url
- * @property-read string|null $preview_signed_url
  * @property-read bool $is_image
  * @property-read bool $is_pdf
  *
@@ -45,6 +43,7 @@ class Media extends Model
      * {@inheritDoc}
      */
     protected $fillable = [
+        'disk',
         'model_type',
         'model_id',
         'type',
@@ -86,7 +85,7 @@ class Media extends Model
     {
         return Attribute::make(
             get: function () {
-                return $this->id ? Storage::disk($this->diskName())->path($this->dir_relative_path) : null;
+                return $this->id ? Storage::disk($this->disk)->path($this->dir_relative_path) : null;
             },
         );
     }
@@ -113,16 +112,7 @@ class Media extends Model
     {
         return Attribute::make(
             get: function () {
-                return $this->id ? $this->makeUrl([$this->id, $this->file_name], false) : null;
-            },
-        );
-    }
-
-    protected function originalSignedUrl(): Attribute
-    {
-        return Attribute::make(
-            get: function () {
-                return $this->id ? $this->makeUrl([$this->id, $this->file_name], true) : null;
+                return $this->id ? $this->makeUrl($this->dir_relative_path.$this->file_name) : null;
             },
         );
     }
@@ -149,16 +139,7 @@ class Media extends Model
     {
         return Attribute::make(
             get: function () {
-                return $this->id && $this->preview ? $this->makeUrl([$this->id, $this->preview], false) : null;
-            },
-        );
-    }
-
-    protected function previewSignedUrl(): Attribute
-    {
-        return Attribute::make(
-            get: function () {
-                return $this->id && $this->preview ? $this->makeUrl([$this->id, $this->preview], true) : null;
+                return $this->id && $this->preview ? $this->makeUrl($this->dir_relative_path.$this->preview) : null;
             },
         );
     }
@@ -177,22 +158,17 @@ class Media extends Model
         );
     }
 
-    private function diskName(): string
+    private function makeUrl(string $path): string
     {
-        return config('file-storage.disk');
-    }
+        $visibility = config("filesystems.disks.{$this->disk}.visibility");
 
-    private function makeUrl(array $parameters, bool $signed): string
-    {
-        if (! $signed) {
-            return URL::route('file-storage:public', $parameters);
+        if ($visibility === 'public') {
+            return Storage::disk($this->disk)->url($path);
         }
 
-        $expireAt = now()->endOfDay();
-        if ($expireAt->addMinutes(10)->isNextDay()) {
-            $expireAt = now()->addDay()->endOfDay();
-        }
-
-        return URL::signedRoute('file-storage:private', $parameters, $expireAt);
+        return Storage::disk($this->disk)->temporaryUrl(
+            path: $path,
+            expiration: now()->addMinutes(10)->isNextDay() ? now()->addDay()->endOfDay() : now()->endOfDay(),
+        );
     }
 }

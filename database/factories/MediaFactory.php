@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Imahmood\FileStorage\Database\Factories;
@@ -20,6 +19,7 @@ class MediaFactory extends Factory
     public function definition(): array
     {
         return [
+            'disk' => 'public',
             'model_type' => 'App/Models/User',
             'model_id' => 1,
             'file_name' => 'fake-file.jpg',

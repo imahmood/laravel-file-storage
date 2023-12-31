@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Imahmood\FileStorage;
 
+use Illuminate\Support\Facades\Storage;
 use Imahmood\FileStorage\Config\Configuration;
 use Imahmood\FileStorage\Exceptions\NotWritableException;
 use Imahmood\FileStorage\Models\Media;
@@ -27,8 +28,8 @@ class FileManipulator
         }
 
         $this->resizeImage(
-            sourceFile: $media->original_absolute_path,
-            targetFile: $media->original_absolute_path,
+            media: $media,
+            targetFile: $media->original_relative_path,
             maxDimension: $this->config->maxDimension,
         );
     }
@@ -47,8 +48,8 @@ class FileManipulator
         $previewName = $this->generatePreviewName($media->file_name);
 
         $this->resizeImage(
-            sourceFile: $media->original_absolute_path,
-            targetFile: $media->dir_absolute_path.$previewName,
+            media: $media,
+            targetFile: $media->dir_relative_path.$previewName,
             maxDimension: $this->config->previewDimension,
         );
 
@@ -67,17 +68,19 @@ class FileManipulator
      * @throws \Imahmood\FileStorage\Exceptions\NotWritableException
      * @throws \Jcupitt\Vips\Exception
      */
-    protected function resizeImage(string $sourceFile, string $targetFile, int $maxDimension): void
+    protected function resizeImage(Media $media, string $targetFile, int $maxDimension): void
     {
-        $image = VipsImage::newFromFile($sourceFile);
+        $image = VipsImage::newFromBuffer(
+            Storage::disk($media->disk)->get($media->original_relative_path)
+        );
 
         $width = min($image->width, $maxDimension);
         $height = min($image->height, $maxDimension);
         $fileExt = pathinfo($targetFile, PATHINFO_EXTENSION);
 
-        $saved = file_put_contents(
-            $targetFile,
-            $image->thumbnail_image($width, ['height' => $height])->writeToBuffer('.'.$fileExt)
+        $saved = Storage::disk($media->disk)->put(
+            path: $targetFile,
+            contents: $image->thumbnail_image($width, ['height' => $height])->writeToBuffer('.'.$fileExt),
         );
 
         $image = null;

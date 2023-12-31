@@ -10,6 +10,7 @@ class Configuration
         public readonly string $queueName,
         public readonly int $maxDimension,
         public readonly int $previewDimension,
+        public readonly bool $generatePreview,
     ) {
     }
 }

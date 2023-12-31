@@ -12,9 +12,9 @@ use Imahmood\FileStorage\Contracts\MediaAwareInterface;
 use Imahmood\FileStorage\Contracts\MediaTypeInterface;
 use Imahmood\FileStorage\Events\AfterMediaSaved;
 use Imahmood\FileStorage\Events\AfterMediaUploaded;
-use Imahmood\FileStorage\Exceptions\PersistenceFailedException;
 use Imahmood\FileStorage\Exceptions\DeleteDirectoryException;
 use Imahmood\FileStorage\Exceptions\DeleteFileException;
+use Imahmood\FileStorage\Exceptions\PersistenceFailedException;
 use Imahmood\FileStorage\Exceptions\UploadException;
 use Imahmood\FileStorage\Jobs\GeneratePreview;
 use Imahmood\FileStorage\Jobs\OptimizeImage;
@@ -22,9 +22,21 @@ use Imahmood\FileStorage\Models\Media;
 
 class FileStorage
 {
+    protected ?string $disk = null;
+
     public function __construct(
         protected readonly Configuration $config,
     ) {
+    }
+
+    /**
+     * Specify the storage disk.
+     */
+    public function onDisk(string $disk): static
+    {
+        $this->disk = $disk;
+
+        return $this;
     }
 
     /**
@@ -36,6 +48,7 @@ class FileStorage
         UploadedFile $uploadedFile,
     ): Media {
         $media = new Media([
+            'disk' => $this->disk ?? $this->config->diskName,
             'model_type' => $relatedTo ? $relatedTo::class : null,
             'model_id' => $relatedTo?->getPrimaryKey(),
             'type' => $type->identifier(),
@@ -69,7 +82,7 @@ class FileStorage
             $media = $this->persistMedia($media, $uploadedFile);
 
             if ($uploadedFile) {
-                $this->deleteFile($originalPaths);
+                $this->deleteFile($media->disk, $originalPaths);
             }
 
             return $media;
@@ -125,20 +138,15 @@ class FileStorage
 
             if ($uploadedFile) {
                 $isUploaded = (bool) $uploadedFile->storeAs($media->dir_relative_path, $media->file_name, [
-                    'disk' => $this->config->diskName,
+                    'disk' => $media->disk,
                 ]);
 
                 if (! $isUploaded) {
                     throw new UploadException();
                 }
 
-                if ($media->is_image) {
-                    Bus::chain([
-                        new OptimizeImage($media),
-                        new GeneratePreview($media),
-                    ])->onQueue($this->config->queueName)->dispatch();
-                } elseif ($media->is_pdf) {
-                    dispatch(new GeneratePreview($media))->onQueue($this->config->queueName);
+                if ($this->config->generatePreview) {
+                    $this->generatePreview($media);
                 }
 
                 AfterMediaUploaded::dispatch($media);
@@ -151,6 +159,21 @@ class FileStorage
     }
 
     /**
+     * Generate preview for the given Media.
+     */
+    protected function generatePreview(Media $media): void
+    {
+        if ($media->is_image) {
+            Bus::chain([
+                new OptimizeImage($media),
+                new GeneratePreview($media),
+            ])->onQueue($this->config->queueName)->dispatch();
+        } elseif ($media->is_pdf) {
+            GeneratePreview::dispatch($media)->onQueue($this->config->queueName);
+        }
+    }
+
+    /**
      * @throws \Imahmood\FileStorage\Exceptions\DeleteDirectoryException
      */
     public function delete(Media $media): bool
@@ -160,7 +183,7 @@ class FileStorage
                 return false;
             }
 
-            $this->deleteDirectory($media->dir_relative_path);
+            $this->deleteDirectory($media->disk, $media->dir_relative_path);
 
             return true;
         });
@@ -169,14 +192,14 @@ class FileStorage
     /**
      * @throws \Imahmood\FileStorage\Exceptions\DeleteDirectoryException
      */
-    protected function deleteDirectory(string $dir): void
+    protected function deleteDirectory(string $disk, string $dir): void
     {
-        $isDeleted = Storage::disk($this->config->diskName)->deleteDirectory($dir);
+        $isDeleted = Storage::disk($disk)->deleteDirectory($dir);
         if (! $isDeleted) {
             throw new DeleteDirectoryException(sprintf(
                 '[FileStorage] Disk: %s, Directory: %s',
-                $this->config->diskName,
-                $dir
+                $disk,
+                $dir,
             ));
         }
     }
@@ -184,16 +207,16 @@ class FileStorage
     /**
      * @throws \Imahmood\FileStorage\Exceptions\DeleteFileException
      */
-    protected function deleteFile(array|string $paths): void
+    protected function deleteFile(string $disk, array|string $paths): void
     {
-        $isDeleted = Storage::disk($this->config->diskName)->delete($paths);
+        $isDeleted = Storage::disk($disk)->delete($paths);
         if (! $isDeleted) {
             $paths = is_array($paths) ? implode(', ', $paths) : $paths;
 
             throw new DeleteFileException(sprintf(
                 '[FileStorage] Disk: %s, Paths: %s',
-                $this->config->diskName,
-                $paths
+                $disk,
+                $paths,
             ));
         }
     }

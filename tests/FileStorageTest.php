@@ -31,6 +31,7 @@ class FileStorageTest extends TestCase
             'queue' => 'media',
             'max_dimension' => 2000,
             'preview_dimension' => 300,
+            'generate_preview' => true,
         ]);
 
         $this->fileStorage = new FileStorage($config);

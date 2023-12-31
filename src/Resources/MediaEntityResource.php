@@ -17,10 +17,13 @@ class MediaEntityResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'disk' => $this->disk,
             'file_name' => $this->file_name,
             'type' => $this->type,
-            'preview_url' => $this->preview_signed_url,
-            'original_url' => $this->original_signed_url,
+            'preview_url' => $this->preview_url,
+            'original_url' => $this->original_url,
+            'created_at' => $this->created_at->toIso8601String(),
+            'updated_at' => $this->created_at->toIso8601String(),
         ];
     }
 }

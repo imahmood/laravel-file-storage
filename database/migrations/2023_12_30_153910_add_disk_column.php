@@ -13,8 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('media', function (Blueprint $table) {
-            $table->string('model_type')->nullable()->change();
-            $table->unsignedBigInteger('model_id')->nullable()->change();
+            $table->string('disk')->after('id');
         });
     }
 
@@ -24,8 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('media', function (Blueprint $table) {
-            $table->string('model_type')->nullable(false)->change();
-            $table->unsignedBigInteger('model_id')->nullable(false)->change();
+            $table->dropColumn('disk');
         });
     }
 };

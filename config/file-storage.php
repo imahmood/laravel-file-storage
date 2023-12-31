@@ -6,4 +6,5 @@ return [
     'queue' => env('FILE_STORAGE_QUEUE', 'media'),
     'max_dimension' => env('FILE_STORAGE_MAX_DIMENSION', 2000),
     'preview_dimension' => env('FILE_STORAGE_PREVIEW_DIMENSION', 300),
+    'generate_preview' => env('FILE_STORAGE_GENERATE_PREVIEW', true),
 ];

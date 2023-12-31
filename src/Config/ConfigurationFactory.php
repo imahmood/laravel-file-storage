@@ -12,6 +12,7 @@ class ConfigurationFactory
             queueName: $data['queue'],
             maxDimension: $data['max_dimension'],
             previewDimension: $data['preview_dimension'],
+            generatePreview: (bool) $data['generate_preview'],
         );
     }
 }
