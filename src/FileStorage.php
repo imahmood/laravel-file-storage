@@ -11,8 +11,9 @@ use Imahmood\FileStorage\Config\Configuration;
 use Imahmood\FileStorage\Contracts\MediaAwareInterface;
 use Imahmood\FileStorage\Contracts\MediaTypeInterface;
 use Imahmood\FileStorage\Exceptions\PersistenceFailedException;
-use Imahmood\FileStorage\Exceptions\UnableToDeleteDirectoryException;
-use Imahmood\FileStorage\Exceptions\UnableToDeleteFileException;
+use Imahmood\FileStorage\Exceptions\DeleteDirectoryException;
+use Imahmood\FileStorage\Exceptions\DeleteFileException;
+use Imahmood\FileStorage\Exceptions\UploadException;
 use Imahmood\FileStorage\Jobs\GeneratePreview;
 use Imahmood\FileStorage\Jobs\OptimizeImage;
 use Imahmood\FileStorage\Models\Media;
@@ -43,7 +44,7 @@ class FileStorage
 
     /**
      * @throws \Imahmood\FileStorage\Exceptions\PersistenceFailedException
-     * @throws \Imahmood\FileStorage\Exceptions\UnableToDeleteFileException
+     * @throws \Imahmood\FileStorage\Exceptions\DeleteFileException
      */
     public function update(
         MediaTypeInterface $type,
@@ -76,7 +77,7 @@ class FileStorage
     /**
      * @throws \InvalidArgumentException
      * @throws \Imahmood\FileStorage\Exceptions\PersistenceFailedException
-     * @throws \Imahmood\FileStorage\Exceptions\UnableToDeleteFileException
+     * @throws \Imahmood\FileStorage\Exceptions\DeleteFileException
      */
     public function updateOrCreate(
         MediaTypeInterface $type,
@@ -126,7 +127,7 @@ class FileStorage
                 ]);
 
                 if (! $isUploaded) {
-                    throw new PersistenceFailedException();
+                    throw new UploadException();
                 }
 
                 if ($media->is_image) {
@@ -144,7 +145,7 @@ class FileStorage
     }
 
     /**
-     * @throws \Imahmood\FileStorage\Exceptions\UnableToDeleteDirectoryException
+     * @throws \Imahmood\FileStorage\Exceptions\DeleteDirectoryException
      */
     public function delete(Media $media): bool
     {
@@ -160,13 +161,13 @@ class FileStorage
     }
 
     /**
-     * @throws \Imahmood\FileStorage\Exceptions\UnableToDeleteDirectoryException
+     * @throws \Imahmood\FileStorage\Exceptions\DeleteDirectoryException
      */
     protected function deleteDirectory(string $dir): void
     {
         $isDeleted = Storage::disk($this->config->diskName)->deleteDirectory($dir);
         if (! $isDeleted) {
-            throw new UnableToDeleteDirectoryException(sprintf(
+            throw new DeleteDirectoryException(sprintf(
                 '[FileStorage] Disk: %s, Directory: %s',
                 $this->config->diskName,
                 $dir
@@ -175,7 +176,7 @@ class FileStorage
     }
 
     /**
-     * @throws \Imahmood\FileStorage\Exceptions\UnableToDeleteFileException
+     * @throws \Imahmood\FileStorage\Exceptions\DeleteFileException
      */
     protected function deleteFile(array|string $paths): void
     {
@@ -183,7 +184,7 @@ class FileStorage
         if (! $isDeleted) {
             $paths = is_array($paths) ? implode(', ', $paths) : $paths;
 
-            throw new UnableToDeleteFileException(sprintf(
+            throw new DeleteFileException(sprintf(
                 '[FileStorage] Disk: %s, Paths: %s',
                 $this->config->diskName,
                 $paths

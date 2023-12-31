@@ -5,6 +5,6 @@ namespace Imahmood\FileStorage\Exceptions;
 
 use Exception;
 
-class UnableToDeleteDirectoryException extends Exception
+class DeleteFileException extends Exception
 {
 }
