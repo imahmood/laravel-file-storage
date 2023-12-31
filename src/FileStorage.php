@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 use Imahmood\FileStorage\Config\Configuration;
 use Imahmood\FileStorage\Contracts\MediaAwareInterface;
 use Imahmood\FileStorage\Contracts\MediaTypeInterface;
+use Imahmood\FileStorage\Events\AfterMediaSaved;
+use Imahmood\FileStorage\Events\AfterMediaUploaded;
 use Imahmood\FileStorage\Exceptions\PersistenceFailedException;
 use Imahmood\FileStorage\Exceptions\DeleteDirectoryException;
 use Imahmood\FileStorage\Exceptions\DeleteFileException;
@@ -138,7 +140,11 @@ class FileStorage
                 } elseif ($media->is_pdf) {
                     dispatch(new GeneratePreview($media))->onQueue($this->config->queueName);
                 }
+
+                AfterMediaUploaded::dispatch($media);
             }
+
+            AfterMediaSaved::dispatch($media);
 
             return $media;
         });
