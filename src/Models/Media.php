@@ -5,6 +5,7 @@ namespace Imahmood\FileStorage\Models;
 
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Imahmood\FileStorage\Database\Factories\MediaFactory;
 
 /**
- * @property int $id
+ * @property string $id
  * @property string $disk
  * @property string|null $model_type
  * @property int|null $model_id
@@ -38,7 +39,7 @@ use Imahmood\FileStorage\Database\Factories\MediaFactory;
  */
 class Media extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     /**
      * {@inheritDoc}
