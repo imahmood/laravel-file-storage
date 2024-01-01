@@ -6,13 +6,13 @@ namespace Imahmood\FileStorage;
 use Illuminate\Support\Facades\Storage;
 use Imahmood\FileStorage\Config\Configuration;
 use Imahmood\FileStorage\Exceptions\NotWritableException;
+use Imahmood\FileStorage\Exceptions\PersistenceFailedException;
 use Imahmood\FileStorage\Models\Media;
 use Jcupitt\Vips\Image as VipsImage;
 
 class FileManipulator
 {
     public function __construct(
-        private readonly FileStorage $fileStorage,
         private readonly Configuration $config,
     ) {
     }
@@ -45,15 +45,17 @@ class FileManipulator
             return;
         }
 
-        $previewName = $this->generatePreviewName($media->file_name);
+        $media->preview = $this->generatePreviewName($media->file_name);
 
         $this->resizeImage(
             media: $media,
-            targetFile: $media->dir_relative_path.$previewName,
+            targetFile: $media->dir_relative_path.$media->preview,
             maxDimension: $this->config->previewDimension,
         );
 
-        $this->fileStorage->updatePreviewName($media, $previewName);
+        if (! $media->save()) {
+            throw new PersistenceFailedException();
+        }
     }
 
     protected function generatePreviewName(string $fileName): string

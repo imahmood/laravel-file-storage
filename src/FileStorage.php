@@ -110,20 +110,6 @@ class FileStorage
     /**
      * @throws \Imahmood\FileStorage\Exceptions\PersistenceFailedException
      */
-    public function updatePreviewName(Media $media, string $fileName): Media
-    {
-        $media->preview = $fileName;
-
-        if (! $media->save()) {
-            throw new PersistenceFailedException();
-        }
-
-        return $media;
-    }
-
-    /**
-     * @throws \Imahmood\FileStorage\Exceptions\PersistenceFailedException
-     */
     protected function persistMedia(Media $media, ?UploadedFile $uploadedFile): Media
     {
         return DB::transaction(function () use ($media, $uploadedFile) {

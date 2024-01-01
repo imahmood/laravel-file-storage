@@ -88,18 +88,6 @@ class FileStorageTest extends TestCase
         ]);
     }
 
-    public function testUpdatePreviewName(): void
-    {
-        /** @var \Imahmood\FileStorage\Models\Media $originalMedia */
-        $originalMedia = Media::factory()->create();
-
-        $updatedMedia = $this->fileStorage->updatePreviewName(clone $originalMedia, 'random-name.jpg');
-
-        $this->assertSame($updatedMedia->file_name, $originalMedia->file_name);
-        $this->assertSame($updatedMedia->preview, 'random-name.jpg');
-        $this->assertSame($updatedMedia->type, $originalMedia->type);
-    }
-
     public function testDeleteMedia(): void
     {
         /** @var \Imahmood\FileStorage\Models\Media $media */
