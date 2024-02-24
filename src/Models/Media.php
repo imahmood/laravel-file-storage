@@ -69,7 +69,7 @@ class Media extends Model
         return Attribute::make(
             set: function ($value) {
                 $fileName = sha1($value.microtime());
-                $ext = pathinfo($value, PATHINFO_EXTENSION);
+                $ext = strtolower(pathinfo($value, PATHINFO_EXTENSION));
 
                 return "$fileName.$ext";
             },

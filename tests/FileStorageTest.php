@@ -36,7 +36,7 @@ class FileStorageTest extends TestCase
 
         $this->fileStorage = new FileStorage($config);
 
-        $path = __DIR__.'/TestSupport/assets/avatar.jpg';
+        $path = __DIR__.'/TestSupport/assets/avatar.JPG';
         $this->testFile = UploadedFile::fake()->create($path, file_get_contents($path));
 
         Queue::fake();
@@ -54,6 +54,7 @@ class FileStorageTest extends TestCase
 
         $this->assertNull($media->preview);
         $this->assertSame($media->type, TestDocumentType::AVATAR->value);
+        $this->assertSame('jpg', pathinfo($media->file_name, PATHINFO_EXTENSION));
 
         Queue::assertPushedWithChain(OptimizeImage::class, [
             GeneratePreview::class,
@@ -66,7 +67,7 @@ class FileStorageTest extends TestCase
         $originalMedia = Media::factory()->create([
             'model_type' => 'App/Models/User',
             'model_id' => 1,
-            'file_name' => 'fake-file.jpg',
+            'file_name' => 'fake-file.JPG',
             'type' => TestDocumentType::AVATAR,
         ]);
 
