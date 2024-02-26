@@ -131,9 +131,7 @@ class FileStorage
                     throw new UploadException();
                 }
 
-                if ($this->config->generatePreview) {
-                    $this->generatePreview($media);
-                }
+                $this->dispatchJobs($media);
 
                 AfterMediaUploaded::dispatch($media);
             }
@@ -145,17 +143,22 @@ class FileStorage
     }
 
     /**
-     * Generate preview for the given Media.
+     * Dispatches jobs for optimizing and generating preview.
      */
-    protected function generatePreview(Media $media): void
+    protected function dispatchJobs(Media $media): void
     {
+        $jobs = [];
+
         if ($media->is_image) {
-            Bus::chain([
-                new OptimizeImage($media),
-                new GeneratePreview($media),
-            ])->onQueue($this->config->queueName)->dispatch();
-        } elseif ($media->is_pdf) {
-            GeneratePreview::dispatch($media)->onQueue($this->config->queueName);
+            $jobs[] = new OptimizeImage($media);
+        }
+
+        if ($this->config->generatePreview && ($media->is_image || $media->is_pdf)) {
+            $jobs[] = new GeneratePreview($media);
+        }
+
+        if ($jobs) {
+            Bus::chain($jobs)->onQueue($this->config->queueName)->dispatch();
         }
     }
 
