@@ -4,11 +4,11 @@ declare(strict_types=1);
 namespace Imahmood\FileStorage;
 
 use DateTimeInterface;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
-use Imahmood\FileStorage\Config\Configuration;
-use Imahmood\FileStorage\Config\ConfigurationFactory;
+use Imahmood\FileStorage\Contracts\NameGeneratorInterface;
 
 class FileStorageServiceProvider extends ServiceProvider
 {
@@ -17,11 +17,11 @@ class FileStorageServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(Configuration::class, function () {
-            return ConfigurationFactory::create(config('file-storage'));
-        });
-
         $this->mergeConfigFrom(__DIR__.'/../config/file-storage.php', 'file-storage');
+
+        $this->registerManipulator();
+        $this->registerNameGenerator();
+        $this->registerTemporaryUrlCallbacks();
     }
 
     /**
@@ -36,8 +36,28 @@ class FileStorageServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/file-storage.php' => config_path('file-storage.php'),
         ]);
+    }
 
-        $this->registerTemporaryUrlCallbacks();
+    protected function registerManipulator(): void
+    {
+        foreach (config('file-storage.modifiers') as $class => $options) {
+            $this->app->when($class)->needs('$options')->give($options);
+        }
+
+        $this->app->singleton(Manipulator::class, function (Application $app) {
+            $manipulator = new Manipulator();
+
+            foreach (config('file-storage.modifiers') as $class => $options) {
+                $manipulator->addModifier($app->make($class));
+            }
+
+            return $manipulator;
+        });
+    }
+
+    protected function registerNameGenerator(): void
+    {
+        $this->app->singleton(NameGeneratorInterface::class, config('file-storage.name_generator'));
     }
 
     protected function registerTemporaryUrlCallbacks(): void

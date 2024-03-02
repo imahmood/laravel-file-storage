@@ -8,17 +8,15 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Imahmood\FileStorage\FileManipulator;
+use Imahmood\FileStorage\Manipulator;
 use Imahmood\FileStorage\Models\Media;
 
-class GeneratePreview implements ShouldQueue
+class RunModifiersJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
      * Create a new job instance.
-     *
-     * @return void
      */
     public function __construct(private readonly Media $media)
     {
@@ -26,13 +24,9 @@ class GeneratePreview implements ShouldQueue
 
     /**
      * Execute the job.
-     *
-     * @throws \Imahmood\FileStorage\Exceptions\NotWritableException
-     * @throws \Imahmood\FileStorage\Exceptions\PersistenceFailedException
-     * @throws \Jcupitt\Vips\Exception
      */
-    public function handle(FileManipulator $fileManipulator): void
+    public function handle(Manipulator $manipulator): void
     {
-        $fileManipulator->generatePreview($this->media);
+        $manipulator->applyModifiers($this->media);
     }
 }

@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Storage;
 use Imahmood\FileStorage\Database\Factories\MediaFactory;
 
+use function Imahmood\FileStorage\is_image;
+
 /**
  * @property string $id
  * @property string $disk
@@ -62,18 +64,6 @@ class Media extends Model
     public function model(): MorphTo
     {
         return $this->morphTo();
-    }
-
-    protected function fileName(): Attribute
-    {
-        return Attribute::make(
-            set: function ($value) {
-                $fileName = sha1($value.microtime());
-                $ext = strtolower(pathinfo($value, PATHINFO_EXTENSION));
-
-                return "$fileName.$ext";
-            },
-        );
     }
 
     protected function dirRelativePath(): Attribute
@@ -149,7 +139,7 @@ class Media extends Model
     protected function isImage(): Attribute
     {
         return Attribute::make(
-            get: fn () => is_string($this->file_name) && preg_match('/\.(webp|jpg|jpeg|png)$/i', $this->file_name),
+            get: fn () => is_string($this->file_name) && is_image($this->file_name),
         );
     }
 
