@@ -14,9 +14,4 @@ enum TestDocumentType: int implements MediaTypeInterface
     {
         return $this->value;
     }
-
-    public function isPublic(): bool
-    {
-        return true;
-    }
 }

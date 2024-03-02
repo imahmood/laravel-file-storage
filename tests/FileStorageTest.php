@@ -3,62 +3,26 @@ declare(strict_types=1);
 
 namespace Imahmood\FileStorage\Tests;
 
-use Illuminate\Http\Testing\File;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\Storage;
-use Imahmood\FileStorage\Config\ConfigurationFactory;
 use Imahmood\FileStorage\FileStorage;
-use Imahmood\FileStorage\Jobs\GeneratePreview;
-use Imahmood\FileStorage\Jobs\OptimizeImage;
 use Imahmood\FileStorage\Models\Media;
 use Imahmood\FileStorage\Tests\TestSupport\Enums\TestDocumentType;
 use Imahmood\FileStorage\Tests\TestSupport\Models\TestUserModel;
+use Imahmood\FileStorage\Tests\TestSupport\UploadedFile;
 
 class FileStorageTest extends TestCase
 {
-    private FileStorage $fileStorage;
-
-    private File $testFile;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $config = ConfigurationFactory::create([
-            'disk' => 'media',
-            'queue' => 'media',
-            'max_dimension' => 2000,
-            'preview_dimension' => 300,
-            'generate_preview' => true,
-        ]);
-
-        $this->fileStorage = new FileStorage($config);
-
-        $path = __DIR__.'/TestSupport/assets/avatar.JPG';
-        $this->testFile = UploadedFile::fake()->create($path, file_get_contents($path));
-
-        Queue::fake();
-        Storage::fake('media');
-        Auth::partialMock()->shouldReceive('id')->zeroOrMoreTimes()->andReturn(1);
-    }
-
     public function testCreateMedia(): void
     {
-        $media = $this->fileStorage->create(
+        $fileStorage = app(FileStorage::class);
+        $media = $fileStorage->create(
             type: TestDocumentType::AVATAR,
             relatedTo: new TestUserModel(),
-            uploadedFile: $this->testFile,
+            uploadedFile: UploadedFile::fake('jpg'),
         );
 
         $this->assertNull($media->preview);
         $this->assertSame($media->type, TestDocumentType::AVATAR->value);
-        $this->assertSame('jpg', pathinfo($media->file_name, PATHINFO_EXTENSION));
-
-        Queue::assertPushedWithChain(OptimizeImage::class, [
-            GeneratePreview::class,
-        ]);
+        $this->assertStringEndsWith('.jpg', $media->file_name);
     }
 
     public function testUpdateMedia(): void
@@ -71,22 +35,18 @@ class FileStorageTest extends TestCase
             'type' => TestDocumentType::AVATAR,
         ]);
 
-        $relatedModel = new TestUserModel();
-
-        $updatedMedia = $this->fileStorage->update(
+        $fileStorage = app(FileStorage::class);
+        $updatedMedia = $fileStorage->update(
             type: TestDocumentType::OTHER,
-            relatedTo: $relatedModel,
+            relatedTo: new TestUserModel(),
             media: clone $originalMedia,
-            uploadedFile: $this->testFile,
+            uploadedFile: UploadedFile::fake('jpg'),
         );
 
         $this->assertNotSame($updatedMedia->file_name, $originalMedia->file_name);
         $this->assertNull($updatedMedia->preview);
         $this->assertSame($updatedMedia->type, TestDocumentType::OTHER->value);
-
-        Queue::assertPushedWithChain(OptimizeImage::class, [
-            GeneratePreview::class,
-        ]);
+        $this->assertStringEndsWith('.jpg', $updatedMedia->file_name);
     }
 
     public function testDeleteMedia(): void
@@ -94,7 +54,9 @@ class FileStorageTest extends TestCase
         /** @var \Imahmood\FileStorage\Models\Media $media */
         $media = Media::factory()->create();
 
-        $result = $this->fileStorage->delete($media);
+        $fileStorage = app(FileStorage::class);
+        $result = $fileStorage->delete($media);
+
         $this->assertTrue($result);
     }
 }

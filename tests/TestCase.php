@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Imahmood\FileStorage\Tests;
 
+use Illuminate\Support\Facades\Storage;
 use Imahmood\FileStorage\FileStorageServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -11,6 +12,8 @@ abstract class TestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
+
+        Storage::fake('local');
 
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
         $this->artisan('migrate', ['--database' => 'testbench'])->run();
