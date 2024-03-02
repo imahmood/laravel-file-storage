@@ -17,8 +17,8 @@
         "nesbot/carbon": "^2.0"
     },
     "require-dev": {
+        "larastan/larastan": "^2.0",
         "laravel/pint": "^1.0",
-        "nunomaduro/larastan": "^2.6",
         "orchestra/testbench": "^8.11"
     },
     "autoload": {
