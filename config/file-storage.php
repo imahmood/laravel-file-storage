@@ -16,6 +16,7 @@ return [
             'formats' => [
                 'png' => 'jpg',
                 'webp' => 'jpg',
+                'jfif' => 'jpg',
                 'heic' => 'jpg',
             ],
         ],

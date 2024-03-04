@@ -5,5 +5,5 @@ namespace Imahmood\FileStorage;
 
 function is_image(?string $filename): bool
 {
-    return $filename && preg_match('/\.(webp|heic|jpg|jpeg|png)$/i', $filename);
+    return $filename && preg_match('/\.(webp|heic|jfif|jpg|jpeg|png)$/i', $filename);
 }
