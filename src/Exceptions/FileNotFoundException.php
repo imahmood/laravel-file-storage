@@ -5,6 +5,4 @@ namespace Imahmood\FileStorage\Exceptions;
 
 use Exception;
 
-class FileNotFoundException extends Exception
-{
-}
+class FileNotFoundException extends Exception {}

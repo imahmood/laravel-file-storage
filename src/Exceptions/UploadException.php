@@ -5,6 +5,4 @@ namespace Imahmood\FileStorage\Exceptions;
 
 use Exception;
 
-class UploadException extends Exception
-{
-}
+class UploadException extends Exception {}

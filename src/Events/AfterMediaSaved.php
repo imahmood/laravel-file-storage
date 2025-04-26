@@ -13,6 +13,5 @@ class AfterMediaSaved
 
     public function __construct(
         public readonly Media $media,
-    ) {
-    }
+    ) {}
 }

@@ -15,8 +15,7 @@ class FormatModifier implements ModifierInterface
         protected readonly Filesystem $filesystem,
         protected readonly Image $image,
         protected readonly array $options,
-    ) {
-    }
+    ) {}
 
     public function canHandle(Media $media): bool
     {
@@ -46,7 +45,7 @@ class FormatModifier implements ModifierInterface
 
         $media->file_name = $newName;
         if (! $media->save()) {
-            throw new PersistenceFailedException();
+            throw new PersistenceFailedException;
         }
 
         $this->filesystem->deleteFile($media->disk, $originalFile);

@@ -15,8 +15,7 @@ class PreviewModifier implements ModifierInterface
         protected readonly Filesystem $filesystem,
         protected readonly Image $image,
         protected readonly array $options,
-    ) {
-    }
+    ) {}
 
     public function canHandle(Media $media): bool
     {
@@ -42,7 +41,7 @@ class PreviewModifier implements ModifierInterface
         );
 
         if (! $media->save()) {
-            throw new PersistenceFailedException();
+            throw new PersistenceFailedException;
         }
 
         if ($oldPreview) {

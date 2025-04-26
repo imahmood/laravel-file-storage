@@ -5,6 +5,4 @@ namespace Imahmood\FileStorage\Exceptions;
 
 use Exception;
 
-class PersistenceFailedException extends Exception
-{
-}
+class PersistenceFailedException extends Exception {}

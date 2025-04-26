@@ -12,8 +12,7 @@ class DownscaleModifier implements ModifierInterface
     public function __construct(
         protected readonly Image $image,
         protected readonly array $options,
-    ) {
-    }
+    ) {}
 
     public function canHandle(Media $media): bool
     {

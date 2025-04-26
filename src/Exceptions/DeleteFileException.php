@@ -5,6 +5,4 @@ namespace Imahmood\FileStorage\Exceptions;
 
 use Exception;
 
-class DeleteFileException extends Exception
-{
-}
+class DeleteFileException extends Exception {}

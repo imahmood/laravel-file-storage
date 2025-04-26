@@ -5,6 +5,4 @@ namespace Imahmood\FileStorage\Exceptions;
 
 use Exception;
 
-class NotWritableException extends Exception
-{
-}
+class NotWritableException extends Exception {}

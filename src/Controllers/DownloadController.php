@@ -16,7 +16,7 @@ class DownloadController extends Controller
     public function __invoke(string $disk, string $path): BinaryFileResponse
     {
         if (! Storage::disk($disk)->exists($path)) {
-            throw new FileNotFoundException();
+            throw new FileNotFoundException;
         }
 
         return response()->file(

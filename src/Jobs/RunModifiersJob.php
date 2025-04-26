@@ -18,9 +18,7 @@ class RunModifiersJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(private readonly Media $media)
-    {
-    }
+    public function __construct(private readonly Media $media) {}
 
     /**
      * Execute the job.

@@ -12,7 +12,7 @@ use Imahmood\FileStorage\Tests\TestSupport\UploadedFile;
 
 class ManipulatorTest extends TestCase
 {
-    public function testModifiersJobPushedAfterMediaCreated(): void
+    public function test_modifiers_job_pushed_after_media_created(): void
     {
         Queue::fake();
         config()->set('file-storage.queue_modifiers', true);
@@ -20,14 +20,14 @@ class ManipulatorTest extends TestCase
         $fileStorage = app(FileStorage::class);
         $fileStorage->create(
             type: TestDocumentType::AVATAR,
-            relatedTo: new TestUserModel(),
+            relatedTo: new TestUserModel,
             uploadedFile: UploadedFile::fake('jpg'),
         );
 
         Queue::assertPushed(RunModifiersJob::class);
     }
 
-    public function testModifiersJobNotPushedAfterMediaCreated(): void
+    public function test_modifiers_job_not_pushed_after_media_created(): void
     {
         Queue::fake();
         config()->set('file-storage.queue_modifiers', false);
@@ -35,21 +35,21 @@ class ManipulatorTest extends TestCase
         $fileStorage = app(FileStorage::class);
         $fileStorage->create(
             type: TestDocumentType::AVATAR,
-            relatedTo: new TestUserModel(),
+            relatedTo: new TestUserModel,
             uploadedFile: UploadedFile::fake('jpg'),
         );
 
         Queue::assertNotPushed(RunModifiersJob::class);
     }
 
-    public function testModifiersRunAfterMediaCreated(): void
+    public function test_modifiers_run_after_media_created(): void
     {
         config()->set('file-storage.queue_modifiers', false);
 
         $fileStorage = app(FileStorage::class);
         $media = $fileStorage->create(
             type: TestDocumentType::AVATAR,
-            relatedTo: new TestUserModel(),
+            relatedTo: new TestUserModel,
             uploadedFile: UploadedFile::fake('heic'),
         );
 

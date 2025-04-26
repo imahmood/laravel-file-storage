@@ -45,7 +45,7 @@ class FileStorageServiceProvider extends ServiceProvider
         }
 
         $this->app->singleton(Manipulator::class, function (Application $app) {
-            $manipulator = new Manipulator();
+            $manipulator = new Manipulator;
 
             foreach (config('file-storage.modifiers') as $class => $options) {
                 $manipulator->addModifier($app->make($class));

@@ -11,12 +11,12 @@ use Imahmood\FileStorage\Tests\TestSupport\UploadedFile;
 
 class FileStorageTest extends TestCase
 {
-    public function testCreateMedia(): void
+    public function test_create_media(): void
     {
         $fileStorage = app(FileStorage::class);
         $media = $fileStorage->create(
             type: TestDocumentType::AVATAR,
-            relatedTo: new TestUserModel(),
+            relatedTo: new TestUserModel,
             uploadedFile: UploadedFile::fake('jpg'),
         );
 
@@ -25,7 +25,7 @@ class FileStorageTest extends TestCase
         $this->assertStringEndsWith('.jpg', $media->file_name);
     }
 
-    public function testUpdateMedia(): void
+    public function test_update_media(): void
     {
         /** @var \Imahmood\FileStorage\Models\Media $originalMedia */
         $originalMedia = Media::factory()->create([
@@ -38,7 +38,7 @@ class FileStorageTest extends TestCase
         $fileStorage = app(FileStorage::class);
         $updatedMedia = $fileStorage->update(
             type: TestDocumentType::OTHER,
-            relatedTo: new TestUserModel(),
+            relatedTo: new TestUserModel,
             media: clone $originalMedia,
             uploadedFile: UploadedFile::fake('jpg'),
         );
@@ -49,7 +49,7 @@ class FileStorageTest extends TestCase
         $this->assertStringEndsWith('.jpg', $updatedMedia->file_name);
     }
 
-    public function testDeleteMedia(): void
+    public function test_delete_media(): void
     {
         /** @var \Imahmood\FileStorage\Models\Media $media */
         $media = Media::factory()->create();

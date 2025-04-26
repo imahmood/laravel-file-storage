@@ -124,7 +124,7 @@ class FileStorage
             }
 
             if (! $media->save()) {
-                throw new PersistenceFailedException();
+                throw new PersistenceFailedException;
             }
 
             if ($uploadedFile) {
@@ -133,7 +133,7 @@ class FileStorage
                 ]);
 
                 if (! $isUploaded) {
-                    throw new UploadException();
+                    throw new UploadException;
                 }
 
                 if ($this->queueModifiers) {
