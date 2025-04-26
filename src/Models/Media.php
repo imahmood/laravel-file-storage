@@ -152,7 +152,7 @@ class Media extends Model
 
     private function makeUrl(string $path): string
     {
-        $visibility = config("filesystems.disks.{$this->disk}.visibility");
+        $visibility = config("filesystems.disks.$this->disk.visibility");
 
         if ($visibility === Filesystem::VISIBILITY_PUBLIC) {
             return Storage::disk($this->disk)->url($path);

@@ -161,7 +161,14 @@ class FileStorage
                 return false;
             }
 
-            $this->filesystem->deleteDirectory($media->disk, $media->dir_relative_path);
+            if (config("filesystems.disks.$media->disk.driver") === 's3') {
+                $this->filesystem->deleteFile($media->disk, array_filter([
+                    $media->original_relative_path,
+                    $media->preview_relative_path,
+                ]));
+            } else {
+                $this->filesystem->deleteDirectory($media->disk, $media->dir_relative_path);
+            }
 
             return true;
         });
