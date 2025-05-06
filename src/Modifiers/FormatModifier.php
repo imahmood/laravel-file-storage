@@ -12,9 +12,9 @@ use Imahmood\FileStorage\Utility\Image;
 class FormatModifier implements ModifierInterface
 {
     public function __construct(
-        protected readonly Filesystem $filesystem,
-        protected readonly Image $image,
-        protected readonly array $options,
+        protected Filesystem $filesystem,
+        protected Image $image,
+        protected array $options,
     ) {}
 
     public function canHandle(Media $media): bool

@@ -10,8 +10,8 @@ use Imahmood\FileStorage\Utility\Image;
 class DownscaleModifier implements ModifierInterface
 {
     public function __construct(
-        protected readonly Image $image,
-        protected readonly array $options,
+        protected Image $image,
+        protected array $options,
     ) {}
 
     public function canHandle(Media $media): bool
