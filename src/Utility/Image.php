@@ -19,6 +19,10 @@ class Image
             Storage::disk($disk)->get($sourceFile)
         );
 
+        if ($image->hasAlpha()) {
+            $image = $image->flatten(['background' => [255, 255, 255]]);
+        }
+
         $width = min($image->width, $width);
         $height = min($image->height, $height);
         $ext = pathinfo($targetFile, PATHINFO_EXTENSION);
@@ -44,6 +48,10 @@ class Image
         $image = VipsImage::newFromBuffer(
             Storage::disk($disk)->get($sourceFile)
         );
+
+        if ($image->hasAlpha()) {
+            $image = $image->flatten(['background' => [255, 255, 255]]);
+        }
 
         $ext = pathinfo($targetFile, PATHINFO_EXTENSION);
 
