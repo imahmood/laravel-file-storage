@@ -19,10 +19,13 @@ class FormatModifier implements ModifierInterface
 
     public function canHandle(Media $media): bool
     {
-        $formats = array_keys($this->options['formats']);
-        $ext = pathinfo($media->file_name, PATHINFO_EXTENSION);
+        if (! $media->is_image) {
+            return false;
+        }
 
-        return $media->is_image && in_array($ext, $formats, true);
+        [$sourceExt, $targetExt, $flatten] = $this->resolveOptions($media);
+
+        return $targetExt !== $sourceExt || $flatten;
     }
 
     /**
@@ -33,14 +36,15 @@ class FormatModifier implements ModifierInterface
      */
     public function handle(Media $media): Media
     {
+        [, $targetExt, $flatten] = $this->resolveOptions($media);
         $originalFile = $media->original_relative_path;
-        $ext = pathinfo($media->file_name, PATHINFO_EXTENSION);
-        $newName = pathinfo($originalFile, PATHINFO_FILENAME).'.'.$this->options['formats'][$ext];
+        $newName = pathinfo($originalFile, PATHINFO_FILENAME).'.'.$targetExt;
 
         $this->image->convert(
             disk: $media->disk,
             sourceFile: $originalFile,
             targetFile: $media->dir_relative_path.$newName,
+            flatten: $flatten,
         );
 
         $media->file_name = $newName;
@@ -48,8 +52,19 @@ class FormatModifier implements ModifierInterface
             throw new PersistenceFailedException;
         }
 
-        $this->filesystem->deleteFile($media->disk, $originalFile);
+        if ($media->wasChanged('file_name')) {
+            $this->filesystem->deleteFile($media->disk, $originalFile);
+        }
 
         return $media;
+    }
+
+    private function resolveOptions(Media $media): array
+    {
+        $sourceExt = pathinfo($media->file_name, PATHINFO_EXTENSION);
+        $targetExt = $this->options['formats'][$sourceExt] ?? $sourceExt;
+        $flatten = $this->options['flatten'] ?? false;
+
+        return [$sourceExt, $targetExt, $flatten];
     }
 }

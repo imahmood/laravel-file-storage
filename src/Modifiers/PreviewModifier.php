@@ -38,6 +38,7 @@ class PreviewModifier implements ModifierInterface
             targetFile: $media->dir_relative_path.$media->preview,
             width: $this->options['width'],
             height: $this->options['height'],
+            flatten: $this->options['flatten'] ?? false,
         );
 
         if (! $media->save()) {
