@@ -10,60 +10,65 @@ use Jcupitt\Vips\Image as VipsImage;
 class Image
 {
     /**
+     * Resize the image and save it.
+     *
      * @throws \Imahmood\FileStorage\Exceptions\NotWritableException
      * @throws \Jcupitt\Vips\Exception
      */
-    public function resize(string $disk, string $sourceFile, string $targetFile, int $width, int $height): void
+    public function resize(string $disk, string $sourceFile, string $targetFile, int $width, int $height, bool $flatten): void
     {
-        $image = VipsImage::newFromBuffer(
-            Storage::disk($disk)->get($sourceFile)
-        );
-
-        if ($image->hasAlpha()) {
-            $image = $image->flatten(['background' => [255, 255, 255]]);
-        }
+        $image = $this->loadImage($disk, $sourceFile);
 
         $width = min($image->width, $width);
         $height = min($image->height, $height);
-        $ext = pathinfo($targetFile, PATHINFO_EXTENSION);
 
-        $saved = Storage::disk($disk)->put(
-            path: $targetFile,
-            contents: $image->thumbnail_image($width, ['height' => $height])->writeToBuffer('.'.$ext),
-        );
-
-        $image = null;
-
-        if ($saved === false) {
-            throw new NotWritableException("Can't write image data to path `$targetFile`");
-        }
-    }
-
-    /**
-     * @throws \Imahmood\FileStorage\Exceptions\NotWritableException
-     * @throws \Jcupitt\Vips\Exception
-     */
-    public function convert(string $disk, string $sourceFile, string $targetFile): void
-    {
-        $image = VipsImage::newFromBuffer(
-            Storage::disk($disk)->get($sourceFile)
-        );
-
-        if ($image->hasAlpha()) {
+        if ($flatten && $image->hasAlpha()) {
             $image = $image->flatten(['background' => [255, 255, 255]]);
         }
 
-        $ext = pathinfo($targetFile, PATHINFO_EXTENSION);
+        $image = $image->thumbnail_image($width, ['height' => $height]);
+        $this->saveImage($disk, $targetFile, $image);
+    }
 
-        $saved = Storage::disk($disk)->put(
-            path: $targetFile,
-            contents: $image->writeToBuffer('.'.$ext),
-        );
+    /**
+     * Convert the image format and save it.
+     *
+     * @throws \Imahmood\FileStorage\Exceptions\NotWritableException
+     * @throws \Jcupitt\Vips\Exception
+     */
+    public function convert(string $disk, string $sourceFile, string $targetFile, bool $flatten): void
+    {
+        $image = $this->loadImage($disk, $sourceFile);
 
-        $image = null;
+        if ($flatten && $image->hasAlpha()) {
+            $image = $image->flatten(['background' => [255, 255, 255]]);
+        }
 
-        if ($saved === false) {
-            throw new NotWritableException("Can't write image data to path `$targetFile`");
+        $this->saveImage($disk, $targetFile, $image);
+    }
+
+    /**
+     * Load image from storage.
+     */
+    private function loadImage(string $disk, string $path): VipsImage
+    {
+        $content = Storage::disk($disk)->get($path);
+
+        return VipsImage::newFromBuffer($content);
+    }
+
+    /**
+     * Save image to storage.
+     *
+     * @throws \Imahmood\FileStorage\Exceptions\NotWritableException
+     */
+    private function saveImage(string $disk, string $path, VipsImage $image): void
+    {
+        $extension = '.'.pathinfo($path, PATHINFO_EXTENSION);
+        $buffer = $image->writeToBuffer($extension);
+
+        if (! Storage::disk($disk)->put($path, $buffer)) {
+            throw new NotWritableException("Can't write image data to path `$path`");
         }
     }
 }

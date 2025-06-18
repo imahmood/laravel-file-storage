@@ -31,6 +31,7 @@ class DownscaleModifier implements ModifierInterface
             targetFile: $media->original_relative_path,
             width: $this->options['width'],
             height: $this->options['height'],
+            flatten: false,
         );
 
         return $media;

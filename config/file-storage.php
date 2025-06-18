@@ -19,6 +19,7 @@ return [
                 'jfif' => 'jpg',
                 'heic' => 'jpg',
             ],
+            'flatten' => true,
         ],
         DownscaleModifier::class => [
             'width' => 2000,
@@ -28,6 +29,7 @@ return [
             'width' => 150,
             'height' => 150,
             'format' => 'jpg',
+            'flatten' => true,
         ],
     ],
 ];
