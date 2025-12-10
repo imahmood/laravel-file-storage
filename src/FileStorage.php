@@ -54,7 +54,7 @@ class FileStorage
     ): Media {
         $media = new Media([
             'disk' => $this->diskName,
-            'model_type' => $relatedTo ? $relatedTo::class : null,
+            'model_type' => $this->morphType($relatedTo),
             'model_id' => $relatedTo?->getPrimaryKey(),
             'type' => $type->identifier(),
         ]);
@@ -73,7 +73,7 @@ class FileStorage
         ?UploadedFile $uploadedFile,
     ): Media {
         $media->fill([
-            'model_type' => $relatedTo ? $relatedTo::class : null,
+            'model_type' => $this->morphType($relatedTo),
             'model_id' => $relatedTo?->getPrimaryKey(),
             'type' => $type->identifier(),
         ]);
@@ -92,6 +92,18 @@ class FileStorage
 
             return $media;
         });
+    }
+
+    /**
+     * Get the morph type for the given class.
+     */
+    protected function morphType(?MediaAwareInterface $class): ?string
+    {
+        if (! $class) {
+            return null;
+        }
+
+        return method_exists($class, 'getMorphClass') ? $class->getMorphClass() : $class::class;
     }
 
     /**
