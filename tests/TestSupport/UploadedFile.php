@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Imahmood\FileStorage\Tests\TestSupport;
 
+use Exception;
 use Illuminate\Http\Testing\File;
 use Illuminate\Http\UploadedFile as HttpUploadedFile;
 
@@ -15,6 +16,12 @@ class UploadedFile
             'heic' => __DIR__.'/assets/sample-heic-image.heic',
         ];
 
-        return HttpUploadedFile::fake()->create($paths[$ext], file_get_contents($paths[$ext]));
+        $fileContent = file_get_contents($paths[$ext]);
+
+        if (! $fileContent) {
+            throw new Exception();
+        }
+
+        return HttpUploadedFile::fake()->create($paths[$ext], $fileContent);
     }
 }

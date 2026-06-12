@@ -5,8 +5,12 @@ parameters:
     level: 7
     paths:
         - src
+        - tests
+
     ignoreErrors:
         -
             identifier: missingType.iterableValue
         -
             identifier: missingType.generics
+
+    treatPhpDocTypesAsCertain: false

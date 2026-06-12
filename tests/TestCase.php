@@ -16,7 +16,7 @@ abstract class TestCase extends Orchestra
         Storage::fake('local');
 
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
-        $this->artisan('migrate', ['--database' => 'testbench'])->run();
+        $this->artisan('migrate', ['--database' => 'testbench']);
     }
 
     /**

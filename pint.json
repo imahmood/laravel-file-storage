@@ -2,6 +2,8 @@
     "preset": "laravel",
     "rules": {
         "blank_line_after_opening_tag": false,
-        "declare_strict_types": true
+        "declare_strict_types": true,
+        "new_with_parentheses": false,
+        "strict_comparison": true
     }
 }

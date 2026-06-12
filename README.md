@@ -18,7 +18,7 @@ while also automating preview generation and image optimization.
 
 Before using this package, make sure your environment meets the following requirements:
 
-- **PHP:** 8.1 or later.
+- **PHP:** 8.2 or later.
 - **Extensions:** `ext-ffi` extension is required.
 - **System Packages:** `libvips42` library is necessary for image processing.
 
